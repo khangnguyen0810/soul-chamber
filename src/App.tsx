@@ -53,6 +53,21 @@ const DEFAULT_SETTINGS: UserSettings = {
     maxTokens: 1024,
 };
 
+const DEFAULT_CHAT_HISTORIES: Record<string, ChatMessage[]> = {
+    "char-1": [
+        {
+            id: "msg-init-1",
+            role: "assistant",
+            content:
+                "State your purpose, traveler. These illuminated manuscripts require complete silence.",
+            timestamp: new Date().toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+            }),
+        },
+    ],
+};
+
 export function App() {
     // Load initial settings and characters from browser localStorage safely
     const [settings, setSettings] = useState<UserSettings>(() => {
@@ -73,28 +88,27 @@ export function App() {
         }
     });
 
-    const [activeCharacterId, setActiveCharacterId] = useState<string | null>("char-1");
+    const [activeCharacterId, setActiveCharacterId] = useState<string | null>(() => {
+        const initialList = characters.length > 0 ? characters : INITIAL_CHARACTERS;
+        return initialList[0]?.id || null;
+    });
+
     const [activeTab, setActiveTab] = useState<ActiveTab>("chat");
 
     const [isGenerating, setIsGenerating] = useState(false);
     const [chatError, setChatError] = useState<string | null>(null);
 
-    const [chatHistories, setChatHistories] = useState<Record<string, ChatMessage[]>>({
-        "char-1": [
-            {
-                id: "msg-init-1",
-                role: "assistant",
-                content:
-                    "State your purpose, traveler. These illuminated manuscripts require complete silence.",
-                timestamp: new Date().toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                }),
-            },
-        ],
+    // Load initial chat histories from browser localStorage
+    const [chatHistories, setChatHistories] = useState<Record<string, ChatMessage[]>>(() => {
+        try {
+            const saved = localStorage.getItem("soul_chamber_chat_histories");
+            return saved ? JSON.parse(saved) : DEFAULT_CHAT_HISTORIES;
+        } catch {
+            return DEFAULT_CHAT_HISTORIES;
+        }
     });
 
-    // Sync settings and characters to LocalStorage on updates
+    // Sync settings, characters, and chat histories to LocalStorage on updates
     useEffect(() => {
         localStorage.setItem("soul_chamber_settings", JSON.stringify(settings));
     }, [settings]);
@@ -102,6 +116,10 @@ export function App() {
     useEffect(() => {
         localStorage.setItem("soul_chamber_characters", JSON.stringify(characters));
     }, [characters]);
+
+    useEffect(() => {
+        localStorage.setItem("soul_chamber_chat_histories", JSON.stringify(chatHistories));
+    }, [chatHistories]);
 
     const handleCreateNewCharacter = () => {
         const newId = `char-${Date.now()}`;
@@ -133,6 +151,23 @@ export function App() {
         }));
         setActiveCharacterId(newId);
         setActiveTab("studio");
+    };
+
+    const handleDeleteCharacter = (characterId: string) => {
+        const remainingCharacters = characters.filter((c) => c.id !== characterId);
+        setCharacters(remainingCharacters);
+
+        // Clean up character's chat history
+        setChatHistories((prev) => {
+            const updated = { ...prev };
+            delete updated[characterId];
+            return updated;
+        });
+
+        // Switch active character if deleted character was currently active
+        if (activeCharacterId === characterId) {
+            setActiveCharacterId(remainingCharacters.length > 0 ? remainingCharacters[0].id : null);
+        }
     };
 
     const handleUpdateCharacter = (updated: CharacterCard) => {
@@ -300,6 +335,7 @@ export function App() {
             selectedModel={settings.selectedModel}
             onSelectCharacter={setActiveCharacterId}
             onCreateNewCharacter={handleCreateNewCharacter}
+            onDeleteCharacter={handleDeleteCharacter}
             onTabChange={setActiveTab}
         >
             {activeTab === "studio" && activeCharacter && (

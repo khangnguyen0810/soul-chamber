@@ -8,9 +8,10 @@ interface AppLayoutProps {
     characters: CharacterCard[];
     activeCharacterId: string | null;
     activeTab: ActiveTab;
-    selectedModel?: string; // Forwarded to Header
+    selectedModel?: string;
     onSelectCharacter: (id: string) => void;
     onCreateNewCharacter: () => void;
+    onDeleteCharacter: (id: string) => void;
     onTabChange: (tab: ActiveTab) => void;
     children: React.ReactNode;
 }
@@ -22,6 +23,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
     selectedModel,
     onSelectCharacter,
     onCreateNewCharacter,
+    onDeleteCharacter,
     onTabChange,
     children,
 }) => {
@@ -46,6 +48,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
                     activeCharacterId={activeCharacterId}
                     onSelectCharacter={onSelectCharacter}
                     onCreateNewCharacter={onCreateNewCharacter}
+                    onDeleteCharacter={onDeleteCharacter}
                 />
 
                 <main className="flex-1 overflow-y-auto bg-[#0B0C0E]">{children}</main>
