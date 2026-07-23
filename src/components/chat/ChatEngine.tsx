@@ -51,9 +51,9 @@ export const ChatEngine: React.FC<ChatEngineProps> = ({
             <div className="relative flex h-full min-w-0 flex-1 flex-col">
                 {/* Chat Control Toolbar */}
                 <div className="flex h-11 shrink-0 items-center justify-between border-b border-white/[0.06] bg-[#131518]/60 px-4 select-none">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-baseline gap-2">
                         <span className="font-mono text-[10px] tracking-wider text-zinc-400 uppercase">
-                            Context:
+                            Name:
                         </span>
                         <span className="text-xs font-medium text-zinc-200">{character.name}</span>
                     </div>

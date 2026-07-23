@@ -70,16 +70,6 @@ export const Header: React.FC<HeaderProps> = ({
             {/* Middle section: Mode Navigation Tabs */}
             <nav className="flex items-center rounded-lg border border-white/[0.06] bg-[#131518] p-0.5">
                 <button
-                    onClick={() => onTabChange("studio")}
-                    className={`rounded-md px-3 py-1 text-xs font-medium transition-all ${
-                        activeTab === "studio"
-                            ? "bg-zinc-800 text-zinc-100 shadow-sm"
-                            : "text-zinc-400 hover:text-zinc-200"
-                    }`}
-                >
-                    Studio
-                </button>
-                <button
                     onClick={() => onTabChange("chat")}
                     className={`rounded-md px-3 py-1 text-xs font-medium transition-all ${
                         activeTab === "chat"
@@ -89,6 +79,17 @@ export const Header: React.FC<HeaderProps> = ({
                 >
                     Chat Engine
                 </button>
+                <button
+                    onClick={() => onTabChange("studio")}
+                    className={`rounded-md px-3 py-1 text-xs font-medium transition-all ${
+                        activeTab === "studio"
+                            ? "bg-zinc-800 text-zinc-100 shadow-sm"
+                            : "text-zinc-400 hover:text-zinc-200"
+                    }`}
+                >
+                    Studio
+                </button>
+
                 <button
                     onClick={() => onTabChange("lore")}
                     className={`rounded-md px-3 py-1 text-xs font-medium transition-all ${

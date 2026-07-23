@@ -74,7 +74,7 @@ export function App() {
     });
 
     const [activeCharacterId, setActiveCharacterId] = useState<string | null>("char-1");
-    const [activeTab, setActiveTab] = useState<ActiveTab>("studio");
+    const [activeTab, setActiveTab] = useState<ActiveTab>("chat");
 
     const [isGenerating, setIsGenerating] = useState(false);
     const [chatError, setChatError] = useState<string | null>(null);

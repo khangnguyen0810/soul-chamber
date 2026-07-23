@@ -1,3 +1,4 @@
+// src/components/layout/Sidebar.tsx
 import React from "react";
 import type { CharacterCard } from "../../types/character";
 
