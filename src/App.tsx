@@ -1,9 +1,12 @@
-import { useState } from "react";
+// src/App.tsx
+
+import { useState, useEffect } from "react";
 import { AppLayout } from "./components/layout/AppLayout";
 import { CharacterStudio } from "./components/studio/CharacterStudio";
 import { ChatEngine } from "./components/chat/ChatEngine";
 import { LoreVault } from "./components/lore/LoreVault";
-import type { ActiveTab, CharacterCard, ChatMessage } from "./types/character";
+import { SettingsManager } from "./components/settings/SettingsManager";
+import type { ActiveTab, CharacterCard, ChatMessage, UserSettings } from "./types/character";
 
 const INITIAL_CHARACTERS: CharacterCard[] = [
     {
@@ -39,8 +42,35 @@ const INITIAL_CHARACTERS: CharacterCard[] = [
     },
 ];
 
+const DEFAULT_SETTINGS: UserSettings = {
+    provider: "anthropic",
+    apiKey: "",
+    baseUrl: "https://api.anthropic.com/v1",
+    selectedModel: "claude-3-5-sonnet-20241022",
+    temperature: 0.7,
+    maxTokens: 1024,
+};
+
 export function App() {
-    const [characters, setCharacters] = useState<CharacterCard[]>(INITIAL_CHARACTERS);
+    // Load initial settings and characters from browser localStorage safely
+    const [settings, setSettings] = useState<UserSettings>(() => {
+        try {
+            const saved = localStorage.getItem("soul_chamber_settings");
+            return saved ? JSON.parse(saved) : DEFAULT_SETTINGS;
+        } catch {
+            return DEFAULT_SETTINGS;
+        }
+    });
+
+    const [characters, setCharacters] = useState<CharacterCard[]>(() => {
+        try {
+            const saved = localStorage.getItem("soul_chamber_characters");
+            return saved ? JSON.parse(saved) : INITIAL_CHARACTERS;
+        } catch {
+            return INITIAL_CHARACTERS;
+        }
+    });
+
     const [activeCharacterId, setActiveCharacterId] = useState<string | null>("char-1");
     const [activeTab, setActiveTab] = useState<ActiveTab>("studio");
 
@@ -58,6 +88,15 @@ export function App() {
             },
         ],
     });
+
+    // Sync settings and characters to LocalStorage on updates
+    useEffect(() => {
+        localStorage.setItem("soul_chamber_settings", JSON.stringify(settings));
+    }, [settings]);
+
+    useEffect(() => {
+        localStorage.setItem("soul_chamber_characters", JSON.stringify(characters));
+    }, [characters]);
 
     const handleCreateNewCharacter = () => {
         const newId = `char-${Date.now()}`;
@@ -95,6 +134,33 @@ export function App() {
         setCharacters((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
     };
 
+    const handleImportCharacter = (imported: CharacterCard) => {
+        setCharacters((prev) => [imported, ...prev]);
+        setChatHistories((prev) => ({
+            ...prev,
+            [imported.id]: [
+                {
+                    id: `msg-init-${Date.now()}`,
+                    role: "assistant",
+                    content: imported.firstMessage || "Greetings.",
+                    timestamp: new Date().toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                    }),
+                },
+            ],
+        }));
+        setActiveCharacterId(imported.id);
+        setActiveTab("studio");
+    };
+
+    const handleImportRosterBackup = (importedList: CharacterCard[]) => {
+        setCharacters(importedList);
+        if (importedList.length > 0) {
+            setActiveCharacterId(importedList[0].id);
+        }
+    };
+
     const handleSendMessage = (characterId: string, content: string) => {
         const timestampStr = new Date().toLocaleTimeString([], {
             hour: "2-digit",
@@ -117,7 +183,7 @@ export function App() {
             const assistantMessage: ChatMessage = {
                 id: `msg-asst-${Date.now()}`,
                 role: "assistant",
-                content: `*${activeChar?.name || "Character"} processes your turn statement.* "I acknowledge your statement: '${content}'. My underlying code evaluates your prompt context and active lore triggers before generating responses."`,
+                content: `*${activeChar?.name || "Character"} processes your turn statement.* "I acknowledge your query: '${content}'. Operating using model '${settings.selectedModel}' (temp: ${settings.temperature})."`,
                 timestamp: new Date().toLocaleTimeString([], {
                     hour: "2-digit",
                     minute: "2-digit",
@@ -185,7 +251,7 @@ export function App() {
         }, 600);
     };
 
-    const activeCharacter = characters.find((c) => c.id === activeCharacterId);
+    const activeCharacter = characters.find((c) => c.id === activeCharacterId) || null;
     const currentMessages = activeCharacterId ? chatHistories[activeCharacterId] || [] : [];
 
     return (
@@ -193,6 +259,7 @@ export function App() {
             characters={characters}
             activeCharacterId={activeCharacterId}
             activeTab={activeTab}
+            selectedModel={settings.selectedModel} // Pass active saved model to layout -> header
             onSelectCharacter={setActiveCharacterId}
             onCreateNewCharacter={handleCreateNewCharacter}
             onTabChange={setActiveTab}
@@ -219,18 +286,14 @@ export function App() {
             )}
 
             {activeTab === "settings" && (
-                <div className="mx-auto max-w-4xl p-8 text-center">
-                    <div className="rounded-xl border border-white/[0.08] bg-[#131518] p-10">
-                        <p className="mb-2 font-mono text-xs text-emerald-400">Engine Settings</p>
-                        <h3 className="text-base font-semibold text-zinc-100">
-                            API Key & Model Configuration
-                        </h3>
-                        <p className="mx-auto mt-2 max-w-md text-xs text-zinc-400">
-                            Configure OpenAI, Anthropic, Gemini, or custom local server endpoint API
-                            keys safely in browser storage.
-                        </p>
-                    </div>
-                </div>
+                <SettingsManager
+                    settings={settings}
+                    onUpdateSettings={setSettings}
+                    characters={characters}
+                    activeCharacter={activeCharacter}
+                    onImportCharacter={handleImportCharacter}
+                    onImportRosterBackup={handleImportRosterBackup}
+                />
             )}
         </AppLayout>
     );

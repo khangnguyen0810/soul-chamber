@@ -1,3 +1,4 @@
+// src/components/layout/AppLayout.tsx
 import React, { useState } from "react";
 import { Header } from "./Header";
 import { Sidebar } from "./Sidebar";
@@ -7,6 +8,7 @@ interface AppLayoutProps {
     characters: CharacterCard[];
     activeCharacterId: string | null;
     activeTab: ActiveTab;
+    selectedModel?: string; // Forwarded to Header
     onSelectCharacter: (id: string) => void;
     onCreateNewCharacter: () => void;
     onTabChange: (tab: ActiveTab) => void;
@@ -17,6 +19,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
     characters,
     activeCharacterId,
     activeTab,
+    selectedModel,
     onSelectCharacter,
     onCreateNewCharacter,
     onTabChange,
@@ -30,6 +33,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
             <Header
                 activeCharacter={activeCharacter}
                 activeTab={activeTab}
+                selectedModel={selectedModel}
                 onTabChange={onTabChange}
                 isSidebarOpen={isSidebarOpen}
                 onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}

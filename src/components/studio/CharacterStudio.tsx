@@ -1,3 +1,4 @@
+// src/components/studio/CharacterStudio.tsx
 import React, { useState } from "react";
 import type { CharacterCard } from "../../types/character";
 import { PromptInspector } from "./PromptInspector";

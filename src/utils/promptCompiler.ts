@@ -1,3 +1,4 @@
+// src/utils/promptCompiler.ts
 import type { CharacterCard, LoreEntry } from "../types/character";
 
 export interface CompiledPrompt {

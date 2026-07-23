@@ -1,3 +1,4 @@
+// src/components/layout/Header.tsx
 import React from "react";
 import type { ActiveTab, CharacterCard } from "../../types/character";
 
@@ -7,6 +8,7 @@ interface HeaderProps {
     onTabChange: (tab: ActiveTab) => void;
     isSidebarOpen: boolean;
     onToggleSidebar: () => void;
+    selectedModel?: string; // Dynamic model name passed from saved settings
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -15,6 +17,7 @@ export const Header: React.FC<HeaderProps> = ({
     onTabChange,
     isSidebarOpen,
     onToggleSidebar,
+    selectedModel,
 }) => {
     return (
         <header className="flex h-14 items-center justify-between border-b border-white/[0.08] bg-[#0B0C0E] px-4 select-none">
@@ -98,12 +101,15 @@ export const Header: React.FC<HeaderProps> = ({
                 </button>
             </nav>
 
-            {/* Right section: System Status & Settings Button */}
+            {/* Right section: Active Saved Model Indicator & Settings Button */}
             <div className="flex items-center gap-3">
-                <div className="hidden items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-950/40 px-2.5 py-1 sm:flex">
+                <div
+                    className="hidden items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-950/40 px-2.5 py-1 sm:flex"
+                    title={`Active Saved Model: ${selectedModel || "None"}`}
+                >
                     <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
-                    <span className="font-mono text-[11px] text-emerald-300">
-                        Claude-3.5-Sonnet
+                    <span className="max-w-[140px] truncate font-mono text-[11px] text-emerald-300">
+                        {selectedModel || "No Model Set"}
                     </span>
                 </div>
 

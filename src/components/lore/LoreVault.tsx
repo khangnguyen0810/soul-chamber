@@ -1,3 +1,4 @@
+// src/components/lore/LoreVault.tsx
 import React, { useState } from "react";
 import type { CharacterCard, LoreEntry } from "../../types/character";
 import { estimateTokens, getTriggeredLoreEntries } from "../../utils/promptCompiler";
