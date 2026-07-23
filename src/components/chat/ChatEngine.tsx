@@ -1,4 +1,5 @@
 // src/components/chat/ChatEngine.tsx
+
 import React, { useState, useRef, useEffect } from "react";
 import type { CharacterCard, ChatMessage } from "../../types/character";
 import { compileSystemInstructions } from "../../utils/promptCompiler";
@@ -6,17 +7,23 @@ import { compileSystemInstructions } from "../../utils/promptCompiler";
 interface ChatEngineProps {
     character: CharacterCard;
     messages: ChatMessage[];
+    isGenerating: boolean;
+    errorMessage: string | null;
     onSendMessage: (content: string) => void;
     onClearHistory: () => void;
     onRegenerateLastTurn: () => void;
+    onDismissError: () => void;
 }
 
 export const ChatEngine: React.FC<ChatEngineProps> = ({
     character,
     messages,
+    isGenerating,
+    errorMessage,
     onSendMessage,
     onClearHistory,
     onRegenerateLastTurn,
+    onDismissError,
 }) => {
     const [input, setInput] = useState("");
     const [isPromptDrawerOpen, setIsPromptDrawerOpen] = useState(false);
@@ -24,16 +31,16 @@ export const ChatEngine: React.FC<ChatEngineProps> = ({
 
     const compiledPrompt = compileSystemInstructions(character, "User");
 
-    // Auto-scroll timeline to bottom on new dialogue turn additions
+    // Auto-scroll timeline to bottom on new dialogue turn additions or generation state changes
     useEffect(() => {
         if (scrollContainerRef.current) {
             scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
         }
-    }, [messages]);
+    }, [messages, isGenerating, errorMessage]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!input.trim()) return;
+        if (!input.trim() || isGenerating) return;
         onSendMessage(input.trim());
         setInput("");
     };
@@ -78,13 +85,30 @@ export const ChatEngine: React.FC<ChatEngineProps> = ({
 
                         <button
                             onClick={onClearHistory}
-                            className="rounded border border-white/5 bg-zinc-900 px-2.5 py-1 font-mono text-[11px] text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-200"
+                            disabled={isGenerating}
+                            className="rounded border border-white/5 bg-zinc-900 px-2.5 py-1 font-mono text-[11px] text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-200 disabled:opacity-40"
                             title="Reset current conversation state"
                         >
                             Reset Session
                         </button>
                     </div>
                 </div>
+
+                {/* API Error Notification Banner */}
+                {errorMessage && (
+                    <div className="flex items-center justify-between border-b border-rose-500/30 bg-rose-950/40 px-4 py-2.5 font-mono text-xs text-rose-300">
+                        <div className="flex items-center gap-2">
+                            <span className="h-2 w-2 animate-pulse rounded-full bg-rose-400" />
+                            <span>{errorMessage}</span>
+                        </div>
+                        <button
+                            onClick={onDismissError}
+                            className="rounded px-2 py-0.5 text-[10px] text-rose-400 hover:bg-rose-900/50 hover:text-rose-200"
+                        >
+                            Dismiss
+                        </button>
+                    </div>
+                )}
 
                 {/* Message Stream Scrollspace */}
                 <div
@@ -97,29 +121,14 @@ export const ChatEngine: React.FC<ChatEngineProps> = ({
                                 Session Initialized
                             </span>
                             <p className="mx-auto max-w-sm text-xs text-zinc-400">
-                                No session log found. Send a message or prompt below to evaluate the
-                                compiled system architecture responses.
+                                Send a message below to generate live responses using your
+                                configured API model.
                             </p>
                         </div>
                     ) : (
                         <div className="mx-auto max-w-3xl space-y-6">
                             {messages.map((msg, idx) => {
-                                const isSystem = msg.role === "system";
                                 const isUser = msg.role === "user";
-
-                                if (isSystem) {
-                                    return (
-                                        <div
-                                            key={msg.id}
-                                            className="rounded-r-lg border-l border-emerald-500/30 bg-emerald-950/10 px-4 py-2.5 font-mono text-[11px] leading-relaxed text-emerald-400/90"
-                                        >
-                                            <span className="mr-2 font-bold tracking-wider text-emerald-500 uppercase">
-                                                [Engine Inject]
-                                            </span>
-                                            {msg.content}
-                                        </div>
-                                    );
-                                }
 
                                 return (
                                     <div
@@ -132,7 +141,9 @@ export const ChatEngine: React.FC<ChatEngineProps> = ({
                                     >
                                         <div className="flex items-center justify-between font-mono text-[10px] text-zinc-500 select-none">
                                             <span
-                                                className={`font-semibold tracking-wider ${isUser ? "text-zinc-400" : "text-emerald-400"}`}
+                                                className={`font-semibold tracking-wider ${
+                                                    isUser ? "text-zinc-400" : "text-emerald-400"
+                                                }`}
                                             >
                                                 {isUser ? "USER" : character.name.toUpperCase()}
                                             </span>
@@ -142,37 +153,49 @@ export const ChatEngine: React.FC<ChatEngineProps> = ({
                                             {msg.content}
                                         </div>
 
-                                        {!isUser && idx === messages.length - 1 && (
-                                            <div className="mt-2 flex items-center gap-3 border-t border-white/[0.04] pt-2">
-                                                <button
-                                                    onClick={onRegenerateLastTurn}
-                                                    className="flex items-center gap-1 font-mono text-[10px] text-zinc-500 transition-colors hover:text-zinc-300"
-                                                >
-                                                    <svg
-                                                        className="h-3 w-3"
-                                                        fill="none"
-                                                        stroke="currentColor"
-                                                        viewBox="0 0 24 24"
+                                        {!isUser &&
+                                            idx === messages.length - 1 &&
+                                            !isGenerating && (
+                                                <div className="mt-2 flex items-center gap-3 border-t border-white/[0.04] pt-2">
+                                                    <button
+                                                        onClick={onRegenerateLastTurn}
+                                                        className="flex items-center gap-1 font-mono text-[10px] text-zinc-500 transition-colors hover:text-zinc-300"
                                                     >
-                                                        <path
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            strokeWidth={1.8}
-                                                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H17"
-                                                        />
-                                                    </svg>
-                                                    <span>Regenerate Turn</span>
-                                                </button>
-                                            </div>
-                                        )}
+                                                        <svg
+                                                            className="h-3 w-3"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            viewBox="0 0 24 24"
+                                                        >
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                strokeWidth={1.8}
+                                                                d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H17"
+                                                            />
+                                                        </svg>
+                                                        <span>Regenerate Turn</span>
+                                                    </button>
+                                                </div>
+                                            )}
                                     </div>
                                 );
                             })}
+
+                            {/* Active Inference Pulsing Indicator */}
+                            {isGenerating && (
+                                <div className="mr-8 flex items-center gap-3 rounded-xl border border-emerald-500/20 bg-[#181B20]/40 p-4 md:mr-16">
+                                    <span className="h-2 w-2 animate-ping rounded-full bg-emerald-400" />
+                                    <span className="font-mono text-xs text-emerald-300">
+                                        {character.name} is inferring response...
+                                    </span>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
 
-                {/* Input Interface Drawer Floor */}
+                {/* Input Interface Floor */}
                 <div className="shrink-0 border-t border-white/[0.06] bg-[#0E1013] p-4 select-none">
                     <form
                         onSubmit={handleSubmit}
@@ -181,19 +204,24 @@ export const ChatEngine: React.FC<ChatEngineProps> = ({
                         <textarea
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
+                            disabled={isGenerating}
                             onKeyDown={(e) => {
                                 if (e.key === "Enter" && !e.shiftKey) {
                                     e.preventDefault();
                                     handleSubmit(e);
                                 }
                             }}
-                            placeholder={`Send message to ${character.name}... (Press Enter to transmit)`}
+                            placeholder={
+                                isGenerating
+                                    ? "Awaiting model turn response..."
+                                    : `Send message to ${character.name}... (Press Enter to transmit)`
+                            }
                             rows={1}
-                            className="max-h-32 min-h-[2.25rem] flex-1 resize-none scrollbar-none bg-transparent px-2 py-1.5 font-sans text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none"
+                            className="max-h-32 min-h-[2.25rem] flex-1 resize-none scrollbar-none bg-transparent px-2 py-1.5 font-sans text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none disabled:opacity-50"
                         />
                         <button
                             type="submit"
-                            disabled={!input.trim()}
+                            disabled={!input.trim() || isGenerating}
                             className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-zinc-100 text-xs font-medium text-zinc-950 transition-all disabled:bg-zinc-800 disabled:text-zinc-600 disabled:opacity-20"
                             title="Transmit token stream"
                         >
@@ -213,7 +241,7 @@ export const ChatEngine: React.FC<ChatEngineProps> = ({
                         </button>
                     </form>
                     <div className="mx-auto mt-1.5 flex max-w-3xl items-center justify-between px-2 font-mono text-[9px] text-zinc-600">
-                        <span>Shift + Enter for text line breaks</span>
+                        <span>Shift + Enter for line breaks</span>
                         <span>Est. Prompt Frame: ~{compiledPrompt.estimatedTokens} tokens</span>
                     </div>
                 </div>
@@ -225,7 +253,7 @@ export const ChatEngine: React.FC<ChatEngineProps> = ({
                     isPromptDrawerOpen ? "w-80 lg:w-96" : "w-0 overflow-hidden border-l-0 opacity-0"
                 }`}
             >
-                <div className="flex shrink-0 items-center justify-between border-b border-white/[0.06] bg-[#131518] p-3 select-none">
+                <div className="flex h-11 shrink-0 items-center justify-between border-b border-white/[0.06] bg-[#131518] px-4 select-none">
                     <span className="font-mono text-[10px] font-bold tracking-wider text-zinc-400">
                         COMPILED PROMPT STRUCT
                     </span>

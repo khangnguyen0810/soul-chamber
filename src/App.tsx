@@ -6,6 +6,8 @@ import { CharacterStudio } from "./components/studio/CharacterStudio";
 import { ChatEngine } from "./components/chat/ChatEngine";
 import { LoreVault } from "./components/lore/LoreVault";
 import { SettingsManager } from "./components/settings/SettingsManager";
+import { sendAiRequest } from "./utils/aiService";
+import { compileSystemInstructions } from "./utils/promptCompiler";
 import type { ActiveTab, CharacterCard, ChatMessage, UserSettings } from "./types/character";
 
 const INITIAL_CHARACTERS: CharacterCard[] = [
@@ -73,6 +75,9 @@ export function App() {
 
     const [activeCharacterId, setActiveCharacterId] = useState<string | null>("char-1");
     const [activeTab, setActiveTab] = useState<ActiveTab>("studio");
+
+    const [isGenerating, setIsGenerating] = useState(false);
+    const [chatError, setChatError] = useState<string | null>(null);
 
     const [chatHistories, setChatHistories] = useState<Record<string, ChatMessage[]>>({
         "char-1": [
@@ -161,7 +166,8 @@ export function App() {
         }
     };
 
-    const handleSendMessage = (characterId: string, content: string) => {
+    const handleSendMessage = async (characterId: string, content: string) => {
+        setChatError(null);
         const timestampStr = new Date().toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit",
@@ -173,17 +179,32 @@ export function App() {
             timestamp: timestampStr,
         };
 
+        const updatedHistory = [...(chatHistories[characterId] || []), userMessage];
+
         setChatHistories((prev) => ({
             ...prev,
-            [characterId]: [...(prev[characterId] || []), userMessage],
+            [characterId]: updatedHistory,
         }));
 
-        setTimeout(() => {
-            const activeChar = characters.find((c) => c.id === characterId);
+        const activeChar = characters.find((c) => c.id === characterId);
+        if (!activeChar) return;
+
+        // Compile prompt system instructions with active keyword lore triggers
+        const compiled = compileSystemInstructions(activeChar, "User", content);
+
+        setIsGenerating(true);
+
+        try {
+            const aiResponseText = await sendAiRequest(
+                settings,
+                compiled.systemInstructions,
+                updatedHistory,
+            );
+
             const assistantMessage: ChatMessage = {
                 id: `msg-asst-${Date.now()}`,
                 role: "assistant",
-                content: `*${activeChar?.name || "Character"} processes your turn statement.* "I acknowledge your query: '${content}'. Operating using model '${settings.selectedModel}' (temp: ${settings.temperature})."`,
+                content: aiResponseText,
                 timestamp: new Date().toLocaleTimeString([], {
                     hour: "2-digit",
                     minute: "2-digit",
@@ -194,10 +215,15 @@ export function App() {
                 ...prev,
                 [characterId]: [...(prev[characterId] || []), assistantMessage],
             }));
-        }, 750);
+        } catch (err: any) {
+            setChatError(err.message || "Failed to generate response.");
+        } finally {
+            setIsGenerating(false);
+        }
     };
 
     const handleClearHistory = (characterId: string) => {
+        setChatError(null);
         const activeChar = characters.find((c) => c.id === characterId);
         setChatHistories((prev) => ({
             ...prev,
@@ -215,40 +241,52 @@ export function App() {
         }));
     };
 
-    const handleRegenerateLastTurn = (characterId: string) => {
-        setChatHistories((prev) => {
-            const currentHistory = prev[characterId] || [];
-            if (currentHistory.length <= 1) return prev;
+    const handleRegenerateLastTurn = async (characterId: string) => {
+        const currentHistory = chatHistories[characterId] || [];
+        if (currentHistory.length <= 1) return;
 
-            const slicedHistory = currentHistory.slice(0, -1);
-            return {
-                ...prev,
-                [characterId]: slicedHistory,
+        setChatError(null);
+        const slicedHistory = currentHistory.slice(0, -1);
+        const lastUserTurn = slicedHistory.filter((m) => m.role === "user").slice(-1)[0];
+
+        setChatHistories((prev) => ({
+            ...prev,
+            [characterId]: slicedHistory,
+        }));
+
+        const activeChar = characters.find((c) => c.id === characterId);
+        if (!activeChar) return;
+
+        const compiled = compileSystemInstructions(activeChar, "User", lastUserTurn?.content || "");
+
+        setIsGenerating(true);
+
+        try {
+            const aiResponseText = await sendAiRequest(
+                settings,
+                compiled.systemInstructions,
+                slicedHistory,
+            );
+
+            const assistantMessage: ChatMessage = {
+                id: `msg-asst-${Date.now()}`,
+                role: "assistant",
+                content: aiResponseText,
+                timestamp: new Date().toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                }),
             };
-        });
 
-        setTimeout(() => {
-            setChatHistories((prev) => {
-                const history = prev[characterId] || [];
-                const lastUserTurn = history[history.length - 1];
-                const activeChar = characters.find((c) => c.id === characterId);
-
-                const assistantMessage: ChatMessage = {
-                    id: `msg-asst-${Date.now()}`,
-                    role: "assistant",
-                    content: `*${activeChar?.name || "Character"} re-evaluates the prompt context.* "Regenerated response: I processed your query '${lastUserTurn?.content || ""}' using a refreshed response token seed."`,
-                    timestamp: new Date().toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                    }),
-                };
-
-                return {
-                    ...prev,
-                    [characterId]: [...history, assistantMessage],
-                };
-            });
-        }, 600);
+            setChatHistories((prev) => ({
+                ...prev,
+                [characterId]: [...(prev[characterId] || []), assistantMessage],
+            }));
+        } catch (err: any) {
+            setChatError(err.message || "Failed to regenerate response.");
+        } finally {
+            setIsGenerating(false);
+        }
     };
 
     const activeCharacter = characters.find((c) => c.id === activeCharacterId) || null;
@@ -259,7 +297,7 @@ export function App() {
             characters={characters}
             activeCharacterId={activeCharacterId}
             activeTab={activeTab}
-            selectedModel={settings.selectedModel} // Pass active saved model to layout -> header
+            selectedModel={settings.selectedModel}
             onSelectCharacter={setActiveCharacterId}
             onCreateNewCharacter={handleCreateNewCharacter}
             onTabChange={setActiveTab}
@@ -275,9 +313,12 @@ export function App() {
                 <ChatEngine
                     character={activeCharacter}
                     messages={currentMessages}
+                    isGenerating={isGenerating}
+                    errorMessage={chatError}
                     onSendMessage={(content) => handleSendMessage(activeCharacter.id, content)}
                     onClearHistory={() => handleClearHistory(activeCharacter.id)}
                     onRegenerateLastTurn={() => handleRegenerateLastTurn(activeCharacter.id)}
+                    onDismissError={() => setChatError(null)}
                 />
             )}
 
