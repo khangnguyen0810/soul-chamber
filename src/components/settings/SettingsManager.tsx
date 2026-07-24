@@ -208,7 +208,7 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
         <div className="mx-auto flex h-full max-w-5xl flex-col space-y-6 p-4 select-none md:p-6">
             {/* Toast Notification Banner */}
             {statusNotification && (
-                <div className="animate-fade-in fixed right-6 bottom-6 z-50 flex items-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-950 px-4 py-2.5 font-mono text-xs text-emerald-200 shadow-2xl">
+                <div className="fixed right-6 bottom-6 z-50 flex animate-fade-in items-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-950 px-4 py-2.5 font-mono text-xs text-emerald-200 shadow-2xl">
                     <span className="h-2 w-2 animate-ping rounded-full bg-emerald-400" />
                     <span>{statusNotification}</span>
                 </div>

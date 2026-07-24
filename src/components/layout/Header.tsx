@@ -1,5 +1,6 @@
 // src/components/layout/Header.tsx
-import React from "react";
+
+import React, { useState } from "react";
 import type { ActiveTab, CharacterCard } from "../../types/character";
 
 interface HeaderProps {
@@ -8,7 +9,8 @@ interface HeaderProps {
     onTabChange: (tab: ActiveTab) => void;
     isSidebarOpen: boolean;
     onToggleSidebar: () => void;
-    selectedModel?: string; // Dynamic model name passed from saved settings
+    selectedModel?: string;
+    onGoHome?: () => void; // Callback to return to Landing Page
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -18,10 +20,29 @@ export const Header: React.FC<HeaderProps> = ({
     isSidebarOpen,
     onToggleSidebar,
     selectedModel,
+    onGoHome,
 }) => {
+    const [isNavigatingHome, setIsNavigatingHome] = useState(false);
+
+    const handleHomeClick = () => {
+        if (!onGoHome || isNavigatingHome) return;
+        setIsNavigatingHome(true);
+        setTimeout(() => {
+            onGoHome();
+            setIsNavigatingHome(false);
+        }, 380);
+    };
+
     return (
-        <header className="flex h-14 items-center justify-between border-b border-white/[0.08] bg-[#0B0C0E] px-4 select-none">
-            {/* Left section: Sidebar toggle & Character Info */}
+        <header className="relative flex h-14 items-center justify-between border-b border-white/[0.08] bg-[#0B0C0E] px-4 select-none">
+            {/* Top Navigation Progress Indicator Bar */}
+            {isNavigatingHome && (
+                <div className="fixed top-0 right-0 left-0 z-50 h-[2px] overflow-hidden bg-zinc-900">
+                    <div className="h-full animate-boot-progress bg-emerald-400 shadow-[0_0_10px_#10b981]" />
+                </div>
+            )}
+
+            {/* Left section: Sidebar toggle, Home Logo & Character Info */}
             <div className="flex items-center gap-3">
                 <button
                     onClick={onToggleSidebar}
@@ -37,6 +58,32 @@ export const Header: React.FC<HeaderProps> = ({
                         />
                     </svg>
                 </button>
+
+                {onGoHome && (
+                    <button
+                        onClick={handleHomeClick}
+                        disabled={isNavigatingHome}
+                        className={`group flex items-center gap-2 rounded px-2 py-1 transition-all ${
+                            isNavigatingHome
+                                ? "bg-emerald-950/30 opacity-70"
+                                : "hover:bg-zinc-800/60"
+                        }`}
+                        title="Return to Landing Page"
+                    >
+                        <div
+                            className={`flex h-5 w-5 items-center justify-center rounded border font-mono text-[10px] font-bold transition-all ${
+                                isNavigatingHome
+                                    ? "animate-pulse border-emerald-400 bg-emerald-400 text-zinc-950"
+                                    : "border-emerald-500/30 bg-emerald-500/10 text-emerald-400 group-hover:border-emerald-400"
+                            }`}
+                        >
+                            S
+                        </div>
+                        <span className="font-mono text-xs text-zinc-300 group-hover:text-zinc-100">
+                            {isNavigatingHome ? "Navigating..." : "SoulChamber"}
+                        </span>
+                    </button>
+                )}
 
                 <div className="h-4 w-[1px] bg-white/[0.1]" />
 
@@ -70,16 +117,6 @@ export const Header: React.FC<HeaderProps> = ({
             {/* Middle section: Mode Navigation Tabs */}
             <nav className="flex items-center rounded-lg border border-white/[0.06] bg-[#131518] p-0.5">
                 <button
-                    onClick={() => onTabChange("chat")}
-                    className={`rounded-md px-3 py-1 text-xs font-medium transition-all ${
-                        activeTab === "chat"
-                            ? "bg-zinc-800 text-zinc-100 shadow-sm"
-                            : "text-zinc-400 hover:text-zinc-200"
-                    }`}
-                >
-                    Chat Engine
-                </button>
-                <button
                     onClick={() => onTabChange("studio")}
                     className={`rounded-md px-3 py-1 text-xs font-medium transition-all ${
                         activeTab === "studio"
@@ -89,7 +126,16 @@ export const Header: React.FC<HeaderProps> = ({
                 >
                     Studio
                 </button>
-
+                <button
+                    onClick={() => onTabChange("chat")}
+                    className={`rounded-md px-3 py-1 text-xs font-medium transition-all ${
+                        activeTab === "chat"
+                            ? "bg-zinc-800 text-zinc-100 shadow-sm"
+                            : "text-zinc-400 hover:text-zinc-200"
+                    }`}
+                >
+                    Chat Engine
+                </button>
                 <button
                     onClick={() => onTabChange("lore")}
                     className={`rounded-md px-3 py-1 text-xs font-medium transition-all ${
@@ -102,7 +148,7 @@ export const Header: React.FC<HeaderProps> = ({
                 </button>
             </nav>
 
-            {/* Right section: Active Saved Model Indicator & Settings Button */}
+            {/* Right section: System Status & Settings Button */}
             <div className="flex items-center gap-3">
                 <div
                     className="hidden items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-950/40 px-2.5 py-1 sm:flex"

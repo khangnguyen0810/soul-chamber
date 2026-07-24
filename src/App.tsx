@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { AppLayout } from "./components/layout/AppLayout";
+import { LandingPage } from "./components/landing/LandingPage";
 import { CharacterStudio } from "./components/studio/CharacterStudio";
 import { ChatEngine } from "./components/chat/ChatEngine";
 import { LoreVault } from "./components/lore/LoreVault";
@@ -69,6 +70,9 @@ const DEFAULT_CHAT_HISTORIES: Record<string, ChatMessage[]> = {
 };
 
 export function App() {
+    // Mode toggle between Landing Showcase and Studio Workbench
+    const [viewMode, setViewMode] = useState<"landing" | "workspace">("landing");
+
     // Load initial settings and characters from browser localStorage safely
     const [settings, setSettings] = useState<UserSettings>(() => {
         try {
@@ -98,7 +102,6 @@ export function App() {
     const [isGenerating, setIsGenerating] = useState(false);
     const [chatError, setChatError] = useState<string | null>(null);
 
-    // Load initial chat histories from browser localStorage
     const [chatHistories, setChatHistories] = useState<Record<string, ChatMessage[]>>(() => {
         try {
             const saved = localStorage.getItem("soul_chamber_chat_histories");
@@ -151,20 +154,19 @@ export function App() {
         }));
         setActiveCharacterId(newId);
         setActiveTab("studio");
+        setViewMode("workspace");
     };
 
     const handleDeleteCharacter = (characterId: string) => {
         const remainingCharacters = characters.filter((c) => c.id !== characterId);
         setCharacters(remainingCharacters);
 
-        // Clean up character's chat history
         setChatHistories((prev) => {
             const updated = { ...prev };
             delete updated[characterId];
             return updated;
         });
 
-        // Switch active character if deleted character was currently active
         if (activeCharacterId === characterId) {
             setActiveCharacterId(remainingCharacters.length > 0 ? remainingCharacters[0].id : null);
         }
@@ -192,6 +194,7 @@ export function App() {
         }));
         setActiveCharacterId(imported.id);
         setActiveTab("studio");
+        setViewMode("workspace");
     };
 
     const handleImportRosterBackup = (importedList: CharacterCard[]) => {
@@ -199,6 +202,7 @@ export function App() {
         if (importedList.length > 0) {
             setActiveCharacterId(importedList[0].id);
         }
+        setViewMode("workspace");
     };
 
     const handleSendMessage = async (characterId: string, content: string) => {
@@ -224,7 +228,6 @@ export function App() {
         const activeChar = characters.find((c) => c.id === characterId);
         if (!activeChar) return;
 
-        // Compile prompt system instructions with active keyword lore triggers
         const compiled = compileSystemInstructions(activeChar, "User", content);
 
         setIsGenerating(true);
@@ -327,6 +330,10 @@ export function App() {
     const activeCharacter = characters.find((c) => c.id === activeCharacterId) || null;
     const currentMessages = activeCharacterId ? chatHistories[activeCharacterId] || [] : [];
 
+    if (viewMode === "landing") {
+        return <LandingPage onLaunchStudio={() => setViewMode("workspace")} />;
+    }
+
     return (
         <AppLayout
             characters={characters}
@@ -337,6 +344,7 @@ export function App() {
             onCreateNewCharacter={handleCreateNewCharacter}
             onDeleteCharacter={handleDeleteCharacter}
             onTabChange={setActiveTab}
+            onGoHome={() => setViewMode("landing")}
         >
             {activeTab === "studio" && activeCharacter && (
                 <CharacterStudio

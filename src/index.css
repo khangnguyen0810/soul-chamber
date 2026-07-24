@@ -1,1 +1,36 @@
+/* src/index.css */
 @import "tailwindcss";
+
+* {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+*::-webkit-scrollbar {
+    display: none;
+}
+
+@theme {
+    --animate-fade-in: fadeIn 0.3s ease-out forwards;
+    --animate-boot-progress: bootProgress 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: scale(0.985);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    @keyframes bootProgress {
+        from {
+            width: 0%;
+        }
+        to {
+            width: 100%;
+        }
+    }
+}

@@ -13,6 +13,7 @@ interface AppLayoutProps {
     onCreateNewCharacter: () => void;
     onDeleteCharacter: (id: string) => void;
     onTabChange: (tab: ActiveTab) => void;
+    onGoHome?: () => void; // Passed to Header
     children: React.ReactNode;
 }
 
@@ -25,6 +26,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
     onCreateNewCharacter,
     onDeleteCharacter,
     onTabChange,
+    onGoHome,
     children,
 }) => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -39,6 +41,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
                 onTabChange={onTabChange}
                 isSidebarOpen={isSidebarOpen}
                 onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+                onGoHome={onGoHome}
             />
 
             <div className="flex flex-1 overflow-hidden">
