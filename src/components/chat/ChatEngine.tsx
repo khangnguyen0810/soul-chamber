@@ -51,7 +51,7 @@ export const ChatEngine: React.FC<ChatEngineProps> = ({
             {/* Atmospheric Ambient Character Backdrop Blur */}
             {character.avatarUrl ? (
                 <div
-                    className="pointer-events-none absolute inset-0 z-0 bg-cover bg-center opacity-15 blur-[100px] scale-125 transition-all duration-700"
+                    className="pointer-events-none absolute inset-0 z-0 scale-125 bg-cover bg-center opacity-50 blur-[5px] transition-all duration-700"
                     style={{ backgroundImage: `url(${character.avatarUrl})` }}
                 />
             ) : (
@@ -74,7 +74,9 @@ export const ChatEngine: React.FC<ChatEngineProps> = ({
                                 character.name.charAt(0).toUpperCase()
                             )}
                         </div>
-                        <span className="text-xs font-semibold text-zinc-100">{character.name}</span>
+                        <span className="text-xs font-semibold text-zinc-100">
+                            {character.name}
+                        </span>
                     </div>
 
                     <div className="flex items-center gap-2">
@@ -99,7 +101,9 @@ export const ChatEngine: React.FC<ChatEngineProps> = ({
                                     d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5"
                                 />
                             </svg>
-                            <span>{isPromptDrawerOpen ? "Close Context" : "View Core Context"}</span>
+                            <span>
+                                {isPromptDrawerOpen ? "Close Context" : "View Core Context"}
+                            </span>
                         </button>
 
                         <button
@@ -132,11 +136,11 @@ export const ChatEngine: React.FC<ChatEngineProps> = ({
                 {/* Message Stream Scrollspace */}
                 <div
                     ref={scrollContainerRef}
-                    className="flex-1 overflow-y-auto px-4 py-6 space-y-6 scrollbar-thin scrollbar-thumb-zinc-800 md:px-8"
+                    className="flex-1 scrollbar-thin scrollbar-thumb-zinc-800 space-y-6 overflow-y-auto px-4 py-6 md:px-8"
                 >
                     {messages.length === 0 ? (
                         <div className="mx-auto mt-12 max-w-xl rounded-2xl border border-dashed border-white/10 bg-[#131518]/40 p-8 text-center backdrop-blur-sm">
-                            <span className="mb-1 block font-mono text-xs text-zinc-400 font-semibold uppercase tracking-wider">
+                            <span className="mb-1 block font-mono text-xs font-semibold tracking-wider text-zinc-400 uppercase">
                                 Conversation Initialized
                             </span>
                             <p className="mx-auto max-w-sm text-xs text-zinc-400">
@@ -159,7 +163,7 @@ export const ChatEngine: React.FC<ChatEngineProps> = ({
                                         <div
                                             className={`max-w-[85%] rounded-2xl p-4 shadow-lg transition-all ${
                                                 isUser
-                                                    ? "rounded-tr-xs bg-zinc-100 text-zinc-950 border border-white/20"
+                                                    ? "rounded-tr-xs border border-white/20 bg-zinc-100 text-zinc-950"
                                                     : "rounded-tl-xs border border-white/[0.08] bg-[#181B20]/90 text-zinc-100 backdrop-blur-md"
                                             }`}
                                         >
@@ -184,13 +188,7 @@ export const ChatEngine: React.FC<ChatEngineProps> = ({
                                                         )}
                                                     </div>
                                                 )}
-                                                <span
-                                                    className={`font-mono text-[11px] font-bold tracking-wider ${
-                                                        isUser
-                                                            ? "text-zinc-800"
-                                                            : "text-emerald-400 uppercase"
-                                                    }`}
-                                                >
+                                                <span className="font-mono text-[11px] font-medium text-zinc-400">
                                                     {isUser ? "User" : character.name}
                                                 </span>
                                             </div>
@@ -202,7 +200,7 @@ export const ChatEngine: React.FC<ChatEngineProps> = ({
 
                                             {/* Footer metadata & actions */}
                                             <div
-                                                className={`mt-2.5 flex items-center justify-between border-t pt-2 text-[10px] font-mono ${
+                                                className={`mt-2.5 flex items-center justify-between border-t pt-2 font-mono text-[10px] ${
                                                     isUser
                                                         ? "border-zinc-300/40 text-zinc-500"
                                                         : "border-white/[0.06] text-zinc-500"
@@ -242,7 +240,7 @@ export const ChatEngine: React.FC<ChatEngineProps> = ({
 
                             {/* Active Inference Pulsing Indicator */}
                             {isGenerating && (
-                                <div className="flex flex-col space-y-1.5 items-start">
+                                <div className="flex flex-col items-start space-y-1.5">
                                     <div className="flex items-center gap-3 rounded-2xl rounded-tl-xs border border-emerald-500/20 bg-[#181B20]/90 px-4 py-3 shadow-lg backdrop-blur-md">
                                         <div className="flex h-5 w-5 items-center justify-center overflow-hidden rounded-full border border-emerald-500/30 bg-emerald-950/40 text-[10px] font-bold text-emerald-400">
                                             {character.name.charAt(0).toUpperCase()}
@@ -285,7 +283,7 @@ export const ChatEngine: React.FC<ChatEngineProps> = ({
                         <button
                             type="submit"
                             disabled={!input.trim() || isGenerating}
-                            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-zinc-100 text-xs font-medium text-zinc-950 transition-all hover:bg-white active:scale-95 disabled:bg-zinc-800 disabled:text-zinc-600 disabled:opacity-30 disabled:scale-100"
+                            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-zinc-100 text-xs font-medium text-zinc-950 transition-all hover:bg-white active:scale-95 disabled:scale-100 disabled:bg-zinc-800 disabled:text-zinc-600 disabled:opacity-30"
                             title="Send message"
                         >
                             <svg

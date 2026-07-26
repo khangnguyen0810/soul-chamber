@@ -23,7 +23,7 @@ export const FormattedMessageContent: React.FC<FormattedMessageContentProps> = (
     const parts = content.split(regex);
 
     return (
-        <div className="leading-relaxed whitespace-pre-wrap font-sans text-sm select-text">
+        <div className="font-sans text-sm leading-relaxed whitespace-pre-wrap select-text">
             {parts.map((part, index) => {
                 if (!part) return null;
 
@@ -40,8 +40,8 @@ export const FormattedMessageContent: React.FC<FormattedMessageContentProps> = (
                             key={index}
                             className={
                                 isUser
-                                    ? "italic text-zinc-300/80 font-normal"
-                                    : "italic text-zinc-400 font-normal"
+                                    ? "font-normal text-zinc-300/80 italic"
+                                    : "font-normal text-zinc-400 italic"
                             }
                         >
                             {cleanText}
@@ -63,7 +63,7 @@ export const FormattedMessageContent: React.FC<FormattedMessageContentProps> = (
                 return (
                     <span
                         key={index}
-                        className={isUser ? "text-zinc-900 font-medium" : "text-zinc-100"}
+                        className={isUser ? "font-medium text-zinc-900" : "text-zinc-100"}
                     >
                         {part}
                     </span>
