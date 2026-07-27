@@ -10,7 +10,7 @@ interface HeaderProps {
     isSidebarOpen: boolean;
     onToggleSidebar: () => void;
     selectedModel?: string;
-    onGoHome?: () => void; // Callback to return to Landing Page
+    onGoHome?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -37,12 +37,12 @@ export const Header: React.FC<HeaderProps> = ({
         <header className="relative flex h-14 items-center justify-between border-b border-white/[0.08] bg-[#0B0C0E] px-4 select-none">
             {/* Top Navigation Progress Indicator Bar */}
             {isNavigatingHome && (
-                <div className="fixed top-0 right-0 left-0 z-50 h-[2px] overflow-hidden bg-zinc-900">
-                    <div className="h-full animate-boot-progress bg-emerald-400 shadow-[0_0_10px_#10b981]" />
+                <div className="fixed top-0 left-0 right-0 z-50 h-[2px] bg-zinc-900 overflow-hidden">
+                    <div className="h-full bg-emerald-400 shadow-[0_0_10px_#10b981] animate-boot-progress" />
                 </div>
             )}
 
-            {/* Left section: Sidebar toggle, Home Logo & Character Info */}
+            {/* Left section: Sidebar toggle, Eidos Logo & Character Info */}
             <div className="flex items-center gap-3">
                 <button
                     onClick={onToggleSidebar}
@@ -65,22 +65,20 @@ export const Header: React.FC<HeaderProps> = ({
                         disabled={isNavigatingHome}
                         className={`group flex items-center gap-2 rounded px-2 py-1 transition-all ${
                             isNavigatingHome
-                                ? "bg-emerald-950/30 opacity-70"
+                                ? "opacity-70 bg-emerald-950/30"
                                 : "hover:bg-zinc-800/60"
                         }`}
                         title="Return to Landing Page"
                     >
-                        <div
-                            className={`flex h-5 w-5 items-center justify-center rounded border font-mono text-[10px] font-bold transition-all ${
-                                isNavigatingHome
-                                    ? "animate-pulse border-emerald-400 bg-emerald-400 text-zinc-950"
-                                    : "border-emerald-500/30 bg-emerald-500/10 text-emerald-400 group-hover:border-emerald-400"
-                            }`}
-                        >
-                            S
+                        <div className={`flex h-5 w-5 items-center justify-center rounded border font-mono text-[10px] font-bold transition-all ${
+                            isNavigatingHome
+                                ? "border-emerald-400 bg-emerald-400 text-zinc-950 animate-pulse"
+                                : "border-emerald-500/30 bg-emerald-500/10 text-emerald-400 group-hover:border-emerald-400"
+                        }`}>
+                            E
                         </div>
                         <span className="font-mono text-xs text-zinc-300 group-hover:text-zinc-100">
-                            {isNavigatingHome ? "Navigating..." : "SoulChamber"}
+                            {isNavigatingHome ? "Loading..." : "Eidos Studio"}
                         </span>
                     </button>
                 )}

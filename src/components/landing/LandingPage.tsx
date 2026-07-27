@@ -45,7 +45,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
         "tell me about the obsidian library manuscript",
     );
 
-    // Staged launching sequence trigger using top progress indicator
     const handleLaunch = () => {
         if (isLaunching) return;
         setIsLaunching(true);
@@ -59,8 +58,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
         <div className="relative min-h-screen overflow-x-hidden bg-[#0B0C0E] font-sans text-zinc-100 antialiased selection:bg-emerald-500/30 selection:text-emerald-200">
             {/* Top Navigation Progress Indicator Bar */}
             {isLaunching && (
-                <div className="fixed top-0 right-0 left-0 z-50 h-[2px] overflow-hidden bg-zinc-900">
-                    <div className="h-full animate-boot-progress bg-emerald-400 shadow-[0_0_10px_#10b981]" />
+                <div className="fixed top-0 left-0 right-0 z-50 h-[2px] bg-zinc-900 overflow-hidden">
+                    <div className="h-full bg-emerald-400 shadow-[0_0_10px_#10b981] animate-boot-progress" />
                 </div>
             )}
 
@@ -70,10 +69,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
                 <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-white/[0.08] bg-[#0B0C0E]/80 px-6 backdrop-blur">
                     <div className="flex items-center gap-3">
                         <div className="flex h-6 w-6 items-center justify-center rounded-md border border-emerald-500/30 bg-emerald-500/10 font-mono text-xs font-bold text-emerald-400">
-                            S
+                            E
                         </div>
                         <span className="text-sm font-semibold tracking-tight text-zinc-100">
-                            SoulChamber Studio
+                            Eidos Studio
+                        </span>
+                        <span className="rounded border border-white/5 bg-zinc-800 px-2 py-0.5 font-mono text-[10px] text-zinc-400">
+                            Spec V2 Engine
                         </span>
                     </div>
 
@@ -114,14 +116,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
                         </div>
 
                         <h1 className="text-3xl leading-[1.15] font-semibold tracking-tight text-zinc-100 md:text-5xl">
-                            Build AI Chatbots & Personas Without Writing Complex Code
+                            Architect AI Personas & World Lore Without Code
                         </h1>
 
                         <p className="max-w-2xl font-sans text-sm leading-relaxed text-zinc-400 md:text-base">
-                            Input character traits, scenario settings, and lore triggers in a clean
-                            visual workbench. Behind the scenes, SoulChamber converts your text into
-                            production-ready system instructions, lorebook macros, and
-                            token-optimized context.
+                            Transform character traits, scenario bounds, and lore keyword triggers into optimized system instruction code inside a high-density visual workbench.
                         </p>
 
                         <div className="flex flex-wrap items-center gap-3 pt-2">
@@ -205,7 +204,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
                                             : "text-zinc-400 hover:text-zinc-200"
                                     }`}
                                 >
-                                    Character Card JSON
+                                    Spec v2 Export
                                 </button>
                             </div>
                         </div>
@@ -358,7 +357,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchStudio }) => {
                 {/* Footer */}
                 <footer className="border-t border-white/[0.08] bg-[#0E1013] px-6 py-8">
                     <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 font-mono text-xs text-zinc-500 sm:flex-row">
-                        <div>SoulChamber Studio • Client-Side Character Architecture</div>
+                        <div>Eidos Studio • Client-Side Persona Architecture</div>
                         <div className="flex items-center gap-4">
                             <button
                                 onClick={handleLaunch}

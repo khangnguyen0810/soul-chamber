@@ -104,8 +104,8 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
     // Export entire workspace roster backup
     const handleExportRosterBackup = () => {
         const backupData = {
-            app: "SoulChamberStudio",
-            version: "1.0",
+            app: "EidosStudio",
+            version: "2.0",
             exportedAt: new Date().toISOString(),
             characters,
         };
@@ -114,7 +114,7 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `character_roster_backup_${Date.now()}.json`;
+        a.download = `eidos_roster_backup_${Date.now()}.json`;
         a.click();
         URL.revokeObjectURL(url);
         showToast(`Exported full backup (${characters.length} characters)`);

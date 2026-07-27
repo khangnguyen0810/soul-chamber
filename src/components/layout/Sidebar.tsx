@@ -124,11 +124,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
             {/* Footer Info */}
             <div className="border-t border-white/[0.06] bg-[#0B0C0E] p-3">
-                <div className="flex items-center justify-between font-mono text-[11px] text-zinc-500">
-                    <span>Prompt Engine v1.0</span>
-                    <span className="text-emerald-400">Ready</span>
-                </div>
-            </div>
-        </aside>
+        <div className="flex items-center justify-between font-mono text-[11px] text-zinc-500">
+          <span>Eidos Engine v2.0</span>
+          <span className="text-emerald-400">Ready</span>
+        </div>
+      </div>
+    </aside>
     );
 };
